@@ -77,7 +77,9 @@ app.get('/', function (req, res) {
 app.get('/api/books', function (req, res) {
   // send all books as JSON response
   console.log('books index');
-  db.Book.find({}, function(err, books){
+  db.Book.find()
+  .populate('author')
+  .exec(function(err, books){
     if (err){
       console.log(err);
     } else {
@@ -104,14 +106,20 @@ app.get('/api/books/:id', function (req, res) {
 app.post('/api/books', function (req, res) {
   // create new book with form data (`req.body`)
   console.log('books create', req.body);
-  var newBook = new db.Book(req.body);
-  db.Book.create(newBook, function(err, newBook){
-    if (err){
-      console.log(err);
-    } else{
-      res.json(newBook);
-    }
-  })
+  var newBook = new db.Book({
+    title: req.body.title,
+    image: req.body.image,
+    releaseDate: req.body.releaseDate,
+  });
+  db.Author.findOne({name: req.body.author}, function(err, author){
+    newBook.save(function(err, book){
+      if(err){
+        console.log('create error: ' + err);
+      }
+      console.log('created ', book.title);
+      res.json(book);
+    });
+  });
 });
 
 // update book
