@@ -103,6 +103,27 @@ app.delete('/api/books/:id', function (req, res) {
   });
 });
 
+
+//characters route 
+app.post('/api/books/:book_id/characters', function (req, res) {
+  var bookId = req.params.book_id;
+  db.Book.findById(bookId)
+  .populate('author')
+  .exec(function(err, foundBook){
+    if (err){
+      res.status(500).json({error: err.message});
+    } else if (foundBook == null){
+      res.status(404).json({error: "No Book found by this ID"});
+      db.Book.characters.push(req.body)
+    } else {
+      foundBook.characters.push(req.body);
+      foundBook.save();
+      res.status(201).json(foundBook);
+    }
+  });
+});
+
+// listen to port 3000
 app.listen(process.env.PORT || 3000, function () {
   console.log('Example app listening at http://localhost:3000/');
 });
